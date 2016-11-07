@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>TMT - TournamentMatchTracker</title>
+
+    <link rel="stylesheet" href="assets/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/bootstrap-theme.min.css">
+    <script src="assets/jquery.min.js"></script>
+    <script src="assets/bootstrap.min.js"></script>
+
+    <style>
+        body {
+            padding-top: 70px;
+            padding-bottom: 30px;
+        }
+
+        .theme-dropdown .dropdown-menu {
+            position: static;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .theme-showcase > p > .btn {
+            margin: 5px 0;
+        }
+
+        .theme-showcase .navbar .container {
+            width: auto;
+        }
+    </style>
+
+    <script>
+        function refresh_list() {
+            $.get('list.php')
+                    .done(function(data) {
+                        $('#list').html(data);
+                    })
+                    .fail(function(data) {
+                        $('#list').html(data.responseText);
+                    });
+        }
+        $(function() {
+            $('.textarea-auto').each(function(key, value) {
+                value.style.overflow = 'hidden';
+                value.style.height = 0;
+                value.style.height = value.scrollHeight + 'px';
+
+                value.addEventListener('keyup', function () {
+                    this.style.overflow = 'hidden';
+                    this.style.height = 0;
+                    this.style.height = this.scrollHeight + 'px';
+                }, false)
+            });
+
+            $('#request_button').click(function(event) {
+                $('#request_button').html('Wait a moment...');
+                $('#request_button').prop('disabled', true);
+                $('#answer').html('');
+                $.post('request.php', $('#match_init_form').serialize())
+                        .done(function(data) {
+                            $('#request_button').html('Success!');
+                        })
+                        .fail(function(data) {
+                            $('#request_button').html('Request');
+                            $('#request_button').prop('disabled', false);
+                            $('#answer').html('Error! ' + data.responseText);
+                        })
+            });
+
+            $('label').tooltip({placement: 'bottom', html: true});
+
+            refresh_list();
+        });
+    </script>
+</head>
+
+<body role="document">
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="./">TMT - TournamentMatchTracker</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container theme-showcase" role="main">
+    <h2>Request</h2>
+    <form class="form-horizontal" role="form" id="match_init_form">
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="ipport" title="The gameserver's ip and port.">ip:port</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="ipport" name="ipport" placeholder="ip:port">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="rcon" title="The gameserver's rcon password.">rcon password</label>
+            <div class="col-sm-10">
+                <input type="password" class="form-control" id="rcon" name="rcon" placeholder="rcon password">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="default_map"
+                   title="The map will be changed to this one when you request the tmt."
+            >default map</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="default_map" name="default_map" placeholder="default map" value="de_dust2">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="pickmode"
+                   title="Method for the map election process."
+            >pickmode</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="pickmode" name="pickmode">
+                    <option value="default_map">default map (just play the default map, ignore the map pool)</option>
+                    <option value="agree">agree (both teams have to agree on one map)</option>
+                    <option value="bo1">bo1 (ban maps, the last one will be played)</option>
+                    <option value="bo1random">bo1random (ban maps, but one of the last ones will be drawn randomly)</option>
+                    <option value="bo1randomagree">bo1randomagree (combination of agree and bo1random pickmode)</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="map_pool"
+                   title="One map per line! Only those will be available in the map election process."
+            >map pool</label>
+            <div class="col-sm-10">
+                <textarea class="form-control textarea-auto" id="map_pool" name="map_pool" placeholder="map pool">de_dust2
+de_train
+de_overpass
+de_inferno
+de_cache
+de_nuke
+de_mirage
+de_cbble</textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="team1name"
+                   title="Any name for the first team."
+            >team name (1)</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="team1name" name="team1name" placeholder="team name (1)">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="team2name"
+                   title="Any name for the second team."
+            >team name (2)</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="team2name" name="team2name" placeholder="team name (2)">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="rcon_init"
+                   title="Those rcon commands will be executed once directly after you request the tmt. <br />
+                   Useful for setting the serverpassword so that the enemies can join easily."
+            >rcon init</label>
+            <div class="col-sm-10">
+                <textarea class="form-control textarea-auto" id="rcon_init" name="rcon_init" placeholder="rcon init"
+>// stuff that will be executed once, directly after requesting the bot
+//hostname &quot;Fun Match&quot;
+//sv_password secret123</textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="rcon_config"
+                   title="Those rcon commands will be executed before the knife round and the actual match start. <br />
+                   You can place the config files into your SERVER's csgo/cfg directory."
+            >rcon config<br/><a href="download/csgo_esl_serverconfig.zip">download esl configs</a></label>
+            <div class="col-sm-10">
+                <textarea class="form-control textarea-auto" id="rcon_config" name="rcon_config" placeholder="rcon config"
+>// stuff that will be executed before knife round and match start
+exec esl5on5.cfg
+mp_overtime_enable 1
+mp_overtime_maxrounds 6
+mp_overtime_startmoney 10000</textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="rcon_end"
+                   title="Those rcon commands will be executed 3 minutes after match end. <br />
+                   Useful for changing the serverpassword afterwards."
+            >rcon end</label>
+            <div class="col-sm-10">
+                <textarea class="form-control textarea-auto" id="rcon_end" name="rcon_end" placeholder="rcon end">// stuff that will be executed three minutes after the match ends
+//hostname &quot;empty server&quot;
+//sv_password unkown456</textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="match_end"
+                   title="Three minutes after match end all players can be kicked or the server can be shutdown automatically (rcon quit). <br />
+                   Or just nothing."
+            >match end</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="match_end" name="match_end">
+                    <option value="none">none</option>
+                    <option value="kick">kick all</option>
+                    <option value="quit">quit server</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-default" id="request_button">Request</button>
+                <span id="answer"></span>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="container theme-showcase" role="main">
+    <h2>Commands</h2>
+    <!-- just a copy and paste from the tmt README -->
+    <p>While beeing ingame on a tracked server the following commands are available.
+        Keep in mind that a few commands are jus aliases and will do the same as other commands.
+        Furthermore a command can be prefixed either by the <code>!</code> or the <code>.</code> character.</p>
+    <ul>
+        <li>During the map election if pickmode is <code>agree</code>:
+
+            <ul>
+                <li>!map, !vote, !pick</li>
+            </ul>
+        </li>
+        <li>During the map election if pickmode is <code>bo1</code> or <code>bo1random</code>:
+
+            <ul>
+                <li>!veto, !ban</li>
+            </ul>
+        </li>
+        <li>During the map election if pickmode is <code>bo1randomagree</code>:
+
+            <ul>
+                <li>!map, !vote, !pick, !veto, !ban</li>
+            </ul>
+        </li>
+        <li>During warmup:
+
+            <ul>
+                <li>!ready, !rdy, !unready, !unrdy</li>
+            </ul>
+        </li>
+        <li>For the winning team after the knife round:
+
+            <ul>
+                <li>!stay, !switch, !swap, !ct, !t</li>
+            </ul>
+        </li>
+        <li>During the match:
+
+            <ul>
+                <li>!pause</li>
+            </ul>
+        </li>
+        <li>While the match is paused:
+
+            <ul>
+                <li>!ready, !rdy, !unready, !unrdy</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="container theme-showcase" role="main">
+    <h2 onclick="refresh_list()">List</h2>
+    <table id="list" class="table table-striped table-hover"></table>
+</div>
+
+</body>
+
+</html>
