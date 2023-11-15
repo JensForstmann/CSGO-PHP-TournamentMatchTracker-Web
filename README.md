@@ -1,3 +1,9 @@
+# ARCHIVED - ARCHIVED - ARCHIVED
+
+This repo has been archived in favor of [TMT2](https://github.com/JensForstmann/tmt2).
+
+---
+
 # DESCRIPTION
 This is just a small and simple (and quick'n'dirty) webapp to send match_init data to an instance of TMT.
 
